@@ -1,0 +1,95 @@
+// =====================================================================
+//  OOP 2026 — one runnable game per lecture session
+//  Course : Object Oriented Programming (ENCE603010)
+//  Unit   : Computer Engineering, Dept. of Electrical Engineering, UI
+//
+//  Each session has its OWN self-contained game in its own package.
+//  Nothing is shared between sessions except the `devtools` screenshot
+//  helper, which is test scaffolding, not course material.
+//
+//  Run a session's game:
+//      ./gradlew runS01     (Windows: gradlew.bat runS01)
+//      ./gradlew runS02  …  runS06
+//  Run every game's self-check (renders, snapshots, exits):
+//      ./gradlew shotAll
+//  Run the unit tests (Session 6 material):
+//      ./gradlew test
+// =====================================================================
+
+plugins {
+    id 'application'
+    id 'java'
+    id 'org.openjfx.javafxplugin' version '0.1.0'
+}
+
+repositories { mavenCentral() }
+
+java {
+    toolchain { languageVersion = JavaLanguageVersion.of(21) }
+}
+
+javafx {
+    version = '21.0.4'
+    modules = ['javafx.controls', 'javafx.graphics', 'javafx.swing']
+}
+
+dependencies {
+    testImplementation platform('org.junit:junit-bom:5.10.2')
+    testImplementation 'org.junit.jupiter:junit-jupiter'
+    testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
+}
+
+test { useJUnitPlatform() }
+
+// Default `./gradlew run` starts Session 1.
+application { mainClass = 'id.ac.ui.oop.s01pong.PongGame' }
+
+// ---------------------------------------------------------------------
+//  One run task per session. `sessions` is the single list to edit when
+//  a session is added — the tasks below are generated from it.
+// ---------------------------------------------------------------------
+def sessions = [
+        S01: ['id.ac.ui.oop.s01pong.PongGame',                 'Pong — Game Loop & Singleton'],
+        S02: ['id.ac.ui.oop.s02shooter.ShooterGame',           'Shooter — Factory Method & Object Pool'],
+        S03: ['id.ac.ui.oop.s03towerdefense.TowerDefenseGame', 'Tower Defense — Command & Observer'],
+        S04: ['id.ac.ui.oop.s04chase.ChaseGame',               'Chase — Strategy & State'],
+        S05: ['id.ac.ui.oop.s05breakout.BreakoutGame',         'Breakout — Template Method & Facade'],
+        S06: ['id.ac.ui.oop.s06snake.SnakeGame',               'Snake — Persistence, Exceptions & Testing'],
+]
+
+// NOTE: every task below launches id.ac.ui.oop.devtools.Launch and passes the
+// real game class as an argument. Launching a class that extends Application
+// directly would demand a --module-path and fail with
+//     "Error: JavaFX runtime components are missing"
+// because the openjfx plugin only configures the application plugin's own
+// `run` task, not custom JavaExec tasks. See Launch.java for the details.
+def LAUNCHER = 'id.ac.ui.oop.devtools.Launch'
+
+sessions.each { id, info ->
+    def cls = info[0]
+    def desc = info[1]
+    tasks.register("run$id", JavaExec) {
+        group = 'application'
+        description = "Run $desc"
+        classpath = sourceSets.main.runtimeClasspath
+        mainClass = LAUNCHER
+        args = [cls]
+    }
+    // Self-check: render for a moment, save a PNG, exit. Used by CI and
+    // by the instructor to confirm every game still runs after a change.
+    tasks.register("shot$id", JavaExec) {
+        group = 'verification'
+        description = "Render $desc headlessly and save a screenshot"
+        classpath = sourceSets.main.runtimeClasspath
+        mainClass = LAUNCHER
+        args = [cls]
+        systemProperty 'shot', layout.buildDirectory.file("shots/${id}.png").get().asFile.absolutePath
+        systemProperty 'shot.after', project.findProperty('shotAfter') ?: '1.5'
+    }
+}
+
+tasks.register('shotAll') {
+    group = 'verification'
+    description = 'Render every session game and save screenshots to build/shots'
+    dependsOn sessions.keySet().collect { "shot$it" }
+}
