@@ -45,7 +45,7 @@ public class ShooterGame extends Application {
 
     // The spawner knows only this interface — never a concrete enemy class.
     private final EnemyFactory[] factories = {
-            new Enemies.GruntFactory(), new Enemies.ZigzagFactory(), new Enemies.TankFactory()
+            new Enemies.GruntFactory(), new Enemies.ZigzagFactory(), new Enemies.TankFactory(), new Enemies.BeanFactory()
     };
 
     private double shipX = W / 2;

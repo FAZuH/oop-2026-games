@@ -4,14 +4,14 @@ import javafx.scene.canvas.GraphicsContext;
 import javafx.scene.paint.Color;
 
 /**
- * SESSION 2 — inheritance, polymorphism, and the Factory Method pattern.
+ •  SESSION 2 — inheritance, polymorphism, and the Factory Method pattern.
  *
- * Three enemies share a base class but move differently. The game loop never
- * asks "which kind is this?" — it just calls update() and lets each type answer
- * for itself. That is polymorphism doing the work an if-else chain would do.
+ •  Three enemies share a base class but move differently. The game loop never
+ •  asks "which kind is this?" — it just calls update() and lets each type answer
+ •  for itself. That is polymorphism doing the work an if-else chain would do.
  *
- * Each enemy also gets its own factory. Adding a fourth enemy type means adding
- * two new classes and touching NOTHING else — the Open/Closed Principle.
+ •  Each enemy also gets its own factory. Adding a fourth enemy type means adding
+ •  two new classes and touching NOTHING else — the Open/Closed Principle.
  */
 public final class Enemies {
 
@@ -79,11 +79,20 @@ public final class Enemies {
         @Override public void update(double dt) { y += speed * dt; }
     }
 
+    public static final class Bean extends Enemy {
+        public Bean(double x) { super(x, -26, 70, 1, 10, Color.web("#03befc"), "Bean"); }
+        @Override public void update(double dt) {
+            y += speed * dt;
+            x += speed * dt;
+        }
+    }
+
+
     // ---------------------------------------------------------------- creator
 
     /**
-     * The Factory Method. The spawner holds one of these and calls create();
-     * it never mentions Grunt, Zigzag or Tank by name.
+     •  The Factory Method. The spawner holds one of these and calls create();
+     •  it never mentions Grunt, Zigzag or Tank by name.
      */
     public interface EnemyFactory {
         Enemy create(double x);
@@ -103,5 +112,10 @@ public final class Enemies {
     public static final class TankFactory implements EnemyFactory {
         @Override public Enemy create(double x) { return new Tank(x); }
         @Override public String label() { return "TankFactory"; }
+    }
+
+    public static final class BeanFactory implements EnemyFactory {
+        @Override public Enemy create(double x) { return new Bean(x); }
+        @Override public String label() { return "BeanFactory"; }
     }
 }
