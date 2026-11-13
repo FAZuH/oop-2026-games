@@ -26,6 +26,7 @@ import javafx.stage.Stage;
  *   N                  : toggle naive movement  R : reset the score
  */
 public class PongGame extends Application {
+    private AudioManager audio;
 
     private static final double W = 900, H = 520;
     private static final double BASE_SPEED = 330;
@@ -52,6 +53,9 @@ public class PongGame extends Application {
         player   = new Paddle(30,      H / 2 - Paddle.HEIGHT / 2, 520, Color.web("#0B5FA5"));
         computer = new Paddle(W - 44,  H / 2 - Paddle.HEIGHT / 2, 300, Color.web("#4A6076"));
         ball     = new Ball(W / 2, H / 2, BASE_SPEED);
+
+        audio = AudioManager.getInstance();
+        audio.init();
 
         Scene scene = new Scene(new StackPane(canvas), W, H);
         scene.setOnKeyPressed(e -> {
@@ -121,17 +125,21 @@ public class PongGame extends Application {
 
         if (ball.vx() < 0 && player.touches(ball)) {
             ball.bounceOff(player, player.hitOffset(ball));
+            audio.playSound("hit");
         } else if (ball.vx() > 0 && computer.touches(ball)) {
             ball.bounceOff(computer, computer.hitOffset(ball));
+            audio.playSound("hit");
         }
 
         // Scoring goes through the Singleton — no ScoreManager was passed in.
         if (ball.x() < -20) {
             ScoreManager.getInstance().awardComputer();
             ball.resetTo(W / 2, H / 2, 1, BASE_SPEED);
+            audio.playSound("score");
         } else if (ball.x() > W + 20) {
             ScoreManager.getInstance().awardPlayer();
             ball.resetTo(W / 2, H / 2, -1, BASE_SPEED);
+            audio.playSound("score");
         }
     }
 
